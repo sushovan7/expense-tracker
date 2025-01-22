@@ -7,7 +7,7 @@ function HeroTesimonial() {
   return (
     <section className="flex px-4 mb-20 w-full gap-10 items-center justify-center flex-col ">
       <h1 className="text-2xl text-center font-bold">What ours users say</h1>
-      <div className="flex flex-col gap-6 ">
+      <div className="flex flex-col md:flex-row gap-6 ">
         {" "}
         {testimonialsData &&
           testimonialsData.length > 0 &&
