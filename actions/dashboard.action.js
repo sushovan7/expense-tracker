@@ -3,6 +3,7 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { use } from "react";
 
 function serializeTransactions(obj) {
   const serialized = { ...obj };
@@ -10,6 +11,10 @@ function serializeTransactions(obj) {
   if (obj.balance) {
     serialized.balance = obj.balance.toNumber();
   }
+  if (obj.amount) {
+    serialized.amount = obj.amount.toNumber();
+  }
+  return serialized;
 }
 
 export async function createAccount(data) {
@@ -45,7 +50,7 @@ export async function createAccount(data) {
 
     if (shouldBeDefaultAccount) {
       await db.account.updateMany({
-        wher: {
+        where: {
           userId: user.id,
           isDefault: true,
         },
@@ -59,7 +64,7 @@ export async function createAccount(data) {
       data: {
         ...data,
         balance: balance,
-        isDefauld: shouldBeDefaultAccount,
+        isDefault: shouldBeDefaultAccount,
         userId: user.id,
       },
     });
@@ -70,6 +75,55 @@ export async function createAccount(data) {
       success: true,
       message: "Account created successfully",
       data: serializedAccount,
+    };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function getUserAccounts() {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = await db.user.findUnique({
+      where: {
+        clerkUserId: userId,
+      },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const accounts = await db.account.findMany({
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        _count: {
+          select: {
+            transactions: true,
+          },
+        },
+      },
+    });
+
+    if (!accounts) {
+      throw new Error("No accounts present");
+    }
+
+    const serializedAccounts = accounts.map(serializeTransactions);
+
+    return {
+      success: true,
+      message: "Account of user",
+      data: serializedAccounts,
     };
   } catch (error) {
     throw new Error(error.message);
