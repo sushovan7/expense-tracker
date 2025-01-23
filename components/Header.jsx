@@ -1,12 +1,12 @@
-"use client";
-
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Pyramid } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { LayoutDashboard, Pencil } from "lucide-react";
+import { checkUser } from "@/lib/checkUser.js";
 
-function Header() {
+async function Header() {
+  await checkUser();
   return (
     <header className="fixed bg-white top-0 z-50 w-full py-2 border-b shadow-md">
       <nav className="conatiner mx-auto flex items-center justify-between px-4 py-4">
