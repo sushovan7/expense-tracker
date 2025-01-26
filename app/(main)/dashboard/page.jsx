@@ -20,7 +20,7 @@ async function Dashboard() {
         <AccountDrawer>
           <Card className="hover:shadow-md transition-shadow cursor-pointer ">
             <CardContent className="flex flex-col items-center justify-center text-muted-foreground h-full pt-5">
-              <Plus className="h-10 w-10 mb-2" />
+              <Plus className="h-10 w-10 mb-2 text-blue-500" />
               <p className="text-sm font-medium">Add New Account</p>
             </CardContent>
           </Card>
