@@ -6,7 +6,8 @@ import { BarLoader } from "react-spinners";
 
 async function AccountsPage({ params }) {
   try {
-    const accountData = await getAccountWithTransactions(params.id);
+    const { id } = await params;
+    const accountData = await getAccountWithTransactions(id);
 
     const { transactions, ...account } = accountData;
 

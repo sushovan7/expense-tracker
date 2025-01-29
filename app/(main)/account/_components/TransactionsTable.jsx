@@ -10,7 +10,23 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Ellipsis } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Delete,
+  Ellipsis,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,51 +37,115 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
 function TransactionsTable({ transactions }) {
   const router = useRouter();
   const filterAndSortedTransactions = transactions;
   const [selectedIds, setSelectedIds] = useState([]);
-  const [isChecked, setIsChecked] = useState(false);
+  const [isAllCkecked, setIsAllChecked] = useState(false);
+  const [isIndividualChecked, setIndividualChecked] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [serchType, setSearchType] = useState("");
+  const [allTypes, setAllTypes] = useState("");
 
-  function handleAllIds() {
-    const allSelected =
-      selectedIds.length === filterAndSortedTransactions.length;
+  const [sort, setSort] = useState({
+    field: "date",
+    direction: "desc",
+  });
 
-    if (allSelected) {
-      setSelectedIds([]);
+  function handleAllChange(e) {
+    const isChecked = e.target.checked;
+
+    if (isChecked) {
+      const ids = filterAndSortedTransactions.map((transaction) => {
+        return transaction.id;
+      });
+      setSelectedIds(ids);
+      setIsAllChecked(isChecked);
     } else {
-      setSelectedIds(
-        filterAndSortedTransactions.map((transaction) => transaction.id)
-      );
+      setSelectedIds([]);
+      setIsAllChecked(false);
     }
   }
-  console.log(isChecked);
 
-  function handleSelectedIds(id) {
-    console.log(id);
-    setSelectedIds((prevState) =>
-      prevState.includes(id)
-        ? prevState.filter((itemId) => itemId !== id)
-        : [...prevState, id]
-    );
+  function handleIndividualChange(e, id) {
+    const isChecked = e.target.checked;
+    setSelectedIds((prevIds) => {
+      if (prevIds.includes(id)) {
+        return prevIds.filter((itemId) => itemId !== id);
+      } else {
+        return [...prevIds, id];
+      }
+    });
+    setIndividualChecked(isChecked);
   }
-  console.log(selectedIds);
 
-  function handleSort() {}
+  function handleSort(field) {
+    setSort((prev) => ({
+      field,
+      direction:
+        prev.field === field && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  }
   function handleDelete() {}
+  function handleBulkDelete() {}
+
   return (
     <div className="pt-8">
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute right-2 top-2.5 h-4 w-4 " />
+          <Input
+            className="px-6 py-4"
+            placeholder="Search your transactions..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-row items-center gap-2">
+          <Select value={allTypes} onValueChange={setAllTypes}>
+            <SelectTrigger className="w-[130px]">
+              <SelectValue placeholder="All types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="INCOME">INCOME</SelectItem>
+              <SelectItem value="EXPENSE">EXPENSE</SelectItem>
+            </SelectContent>
+          </Select>
+          {selectedIds.length > 0 && (
+            <div>
+              <Button variant="destructive" onClick={handleBulkDelete}>
+                Delete {selectedIds.length}{" "}
+                {selectedIds.length > 1 ? "transactions" : "transaction"}
+              </Button>
+            </div>
+          )}
+
+          {(searchQuery || allTypes) && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery("");
+                setAllTypes("");
+                setSelectedIds([]);
+                setIsAllChecked(false);
+              }}
+            >
+              <X className="h-4 w-5" />
+            </Button>
+          )}
+        </div>
+      </div>
       <Table>
         <TableCaption>A list of your recent transactions</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead className="w-[50px]">
-              <Checkbox
-                checked={
-                  selectedIds.length === filterAndSortedTransactions.length
-                }
-                onChange={handleAllIds}
+              <input
+                type="checkbox"
+                checked={isAllCkecked}
+                onChange={handleAllChange}
               />{" "}
               All
             </TableHead>
@@ -73,7 +153,18 @@ function TransactionsTable({ transactions }) {
               className="cursor-pointer"
               onClick={() => handleSort("date")}
             >
-              <div className="flex items-center">Date</div>
+              <div className="flex items-center">
+                Date{" "}
+                {sort.field === "date" && sort.direction === "asc" ? (
+                  <>
+                    <ChevronUp className="mr-2 h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="mr-2 h-4 w-4" />
+                  </>
+                )}
+              </div>
             </TableHead>
             <TableHead>Description</TableHead>
             <TableHead
@@ -87,7 +178,18 @@ function TransactionsTable({ transactions }) {
               className="cursor-pointer"
               onClick={() => handleSort("amount")}
             >
-              <div className="flex  items-center justify-end">Amount</div>
+              <div className="flex  items-center justify-end">
+                Amount{" "}
+                {sort.field === "amount" && sort.direction === "asc" ? (
+                  <>
+                    <ChevronUp className="mr-2 h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="mr-2 h-4 w-4" />
+                  </>
+                )}
+              </div>
             </TableHead>
             <TableHead className="text-right">Recurring</TableHead>
             <TableHead className="text-right">Action</TableHead>
@@ -105,17 +207,12 @@ function TransactionsTable({ transactions }) {
               return (
                 <TableRow key={transaction.id}>
                   <TableCell className="font-medium">
-                    <Checkbox
-                      checked={
-                        selectedIds.length ===
-                        filterAndSortedTransactions.length
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(transaction.id)}
+                      onChange={(e) =>
+                        handleIndividualChange(e, transaction.id)
                       }
-                      className={
-                        selectedIds.includes(transaction.id)
-                          ? "data-[state=checked]:bg-blue-500"
-                          : ""
-                      }
-                      onChange={() => handleSelectedIds(transaction.id)}
                     />
                   </TableCell>
                   <TableCell>
