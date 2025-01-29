@@ -7,7 +7,6 @@ import { BarLoader } from "react-spinners";
 async function AccountsPage({ params }) {
   try {
     const accountData = await getAccountWithTransactions(params.id);
-    console.log(accountData);
 
     const { transactions, ...account } = accountData;
 
@@ -41,7 +40,14 @@ async function AccountsPage({ params }) {
 
         {/* transactions table */}
         <Suspense
-          fallback={<BarLoader className="mt-4" width="100%" color="#9333ea" />}
+          fallback={
+            <BarLoader
+              height={4}
+              className="mt-4"
+              width="100%"
+              color="#9333ea"
+            />
+          }
         >
           <TransactionsTable transactions={transactions} />
         </Suspense>

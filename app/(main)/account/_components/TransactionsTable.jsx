@@ -20,10 +20,37 @@ import {
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 function TransactionsTable({ transactions }) {
   const router = useRouter();
   const filterAndSortedTransactions = transactions;
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [isChecked, setIsChecked] = useState(false);
+
+  function handleAllIds() {
+    const allSelected =
+      selectedIds.length === filterAndSortedTransactions.length;
+
+    if (allSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(
+        filterAndSortedTransactions.map((transaction) => transaction.id)
+      );
+    }
+  }
+  console.log(isChecked);
+
+  function handleSelectedIds(id) {
+    console.log(id);
+    setSelectedIds((prevState) =>
+      prevState.includes(id)
+        ? prevState.filter((itemId) => itemId !== id)
+        : [...prevState, id]
+    );
+  }
+  console.log(selectedIds);
 
   function handleSort() {}
   function handleDelete() {}
@@ -34,7 +61,13 @@ function TransactionsTable({ transactions }) {
         <TableHeader>
           <TableRow>
             <TableHead className="w-[50px]">
-              <Checkbox /> All
+              <Checkbox
+                checked={
+                  selectedIds.length === filterAndSortedTransactions.length
+                }
+                onChange={handleAllIds}
+              />{" "}
+              All
             </TableHead>
             <TableHead
               className="cursor-pointer"
@@ -69,11 +102,21 @@ function TransactionsTable({ transactions }) {
             </TableRow>
           ) : (
             filterAndSortedTransactions.map((transaction) => {
-              console.log(transaction);
               return (
                 <TableRow key={transaction.id}>
                   <TableCell className="font-medium">
-                    <Checkbox className=" data-[state=checked]:bg-blue-500" />
+                    <Checkbox
+                      checked={
+                        selectedIds.length ===
+                        filterAndSortedTransactions.length
+                      }
+                      className={
+                        selectedIds.includes(transaction.id)
+                          ? "data-[state=checked]:bg-blue-500"
+                          : ""
+                      }
+                      onChange={() => handleSelectedIds(transaction.id)}
+                    />
                   </TableCell>
                   <TableCell>
                     {transaction.type === "EXPENSE" ? (
