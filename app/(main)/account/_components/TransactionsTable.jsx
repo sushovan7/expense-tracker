@@ -45,7 +45,7 @@ function TransactionsTable({ transactions }) {
   const [isAllCkecked, setIsAllChecked] = useState(false);
   const [isIndividualChecked, setIndividualChecked] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [serchType, setSearchType] = useState("");
+  const [searchType, setSearchType] = useState("");
   const [allTypes, setAllTypes] = useState("");
 
   const [sort, setSort] = useState({
@@ -57,33 +57,41 @@ function TransactionsTable({ transactions }) {
   const filterAndSortedTransactions = useMemo(() => {
     let result = [...transactions];
 
+    // ✅ Fixing search filter
     if (searchQuery) {
       const searchLower = searchQuery.toLowerCase();
-      result = result.filter((transaction) => {
-        return transaction.description?.toLowerCase().includes(searchLower);
-      });
+      result = result.filter((transaction) =>
+        transaction.description?.toLowerCase().includes(searchLower)
+      );
     }
 
+    // ✅ Fixing sorting logic
     result.sort((a, b) => {
       let comparison = 0;
+
       switch (sort.field) {
         case "date":
-          comparison = new Date(a.date) - new Date(b.date);
+          const dateA = a.date ? new Date(a.date).getTime() : 0;
+          const dateB = b.date ? new Date(b.date).getTime() : 0;
+          comparison = dateA - dateB;
           break;
+
         case "amount":
-          comparison = a.amount - b.amount;
+          const amountA = a.amount ?? 0;
+          const amountB = b.amount ?? 0;
+          comparison = amountA - amountB;
           break;
 
         default:
           comparison = 0;
           break;
       }
+
       return sort.direction === "asc" ? comparison : -comparison;
     });
 
     return result;
-  }, [transactions, serchType, searchQuery, sort]);
-
+  }, [transactions, searchType, searchQuery, sort]);
   function handleAllChange(e) {
     const isChecked = e.target.checked;
 
