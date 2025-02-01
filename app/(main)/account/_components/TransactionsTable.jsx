@@ -52,12 +52,10 @@ function TransactionsTable({ transactions }) {
     field: "date",
     direction: "desc",
   });
-  console.log(sort);
 
   const filterAndSortedTransactions = useMemo(() => {
     let result = [...transactions];
 
-    // ✅ Fixing search filter
     if (searchQuery) {
       const searchLower = searchQuery.toLowerCase();
       result = result.filter((transaction) =>
@@ -65,7 +63,6 @@ function TransactionsTable({ transactions }) {
       );
     }
 
-    // ✅ Fixing sorting logic
     result.sort((a, b) => {
       let comparison = 0;
 
