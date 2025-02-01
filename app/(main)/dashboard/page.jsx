@@ -7,7 +7,6 @@ import AccountCard from "./_components/AccountCard";
 
 async function Dashboard() {
   const { data } = await getUserAccounts();
-  console.log(data);
 
   return (
     <div className="space-y-8">

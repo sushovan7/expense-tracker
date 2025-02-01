@@ -36,12 +36,11 @@ import {
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 
 function TransactionsTable({ transactions }) {
   const router = useRouter();
-  const filterAndSortedTransactions = transactions;
   const [selectedIds, setSelectedIds] = useState([]);
   const [isAllCkecked, setIsAllChecked] = useState(false);
   const [isIndividualChecked, setIndividualChecked] = useState(false);
@@ -53,6 +52,37 @@ function TransactionsTable({ transactions }) {
     field: "date",
     direction: "desc",
   });
+  console.log(sort);
+
+  const filterAndSortedTransactions = useMemo(() => {
+    let result = [...transactions];
+
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      result = result.filter((transaction) => {
+        return transaction.description?.toLowerCase().includes(searchLower);
+      });
+    }
+
+    result.sort((a, b) => {
+      let comparison = 0;
+      switch (sort.field) {
+        case "date":
+          comparison = new Date(a.date) - new Date(b.date);
+          break;
+        case "amount":
+          comparison = a.amount - b.amount;
+          break;
+
+        default:
+          comparison = 0;
+          break;
+      }
+      return sort.direction === "asc" ? comparison : -comparison;
+    });
+
+    return result;
+  }, [transactions, serchType, searchQuery, sort]);
 
   function handleAllChange(e) {
     const isChecked = e.target.checked;
@@ -88,6 +118,7 @@ function TransactionsTable({ transactions }) {
         prev.field === field && prev.direction === "asc" ? "desc" : "asc",
     }));
   }
+
   function handleDelete() {}
   function handleBulkDelete() {}
 
@@ -105,8 +136,8 @@ function TransactionsTable({ transactions }) {
         </div>
         <div className="flex flex-row items-center gap-2">
           <Select value={allTypes} onValueChange={setAllTypes}>
-            <SelectTrigger className="w-[130px]">
-              <SelectValue placeholder="All types" />
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="All Types" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="INCOME">INCOME</SelectItem>

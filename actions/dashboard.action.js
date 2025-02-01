@@ -3,7 +3,6 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { use } from "react";
 
 function serializeTransactions(obj) {
   const serialized = { ...obj };
@@ -84,6 +83,8 @@ export async function createAccount(data) {
 export async function getUserAccounts() {
   try {
     const { userId } = await auth();
+    console.log(userId);
+
     if (!userId) {
       throw new Error("Unauthorized");
     }

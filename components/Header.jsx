@@ -9,7 +9,8 @@ import { updateDefaultAccount } from "@/actions/account.action";
 
 async function Header() {
   await checkUser();
-  await getUserAccounts();
+  const user = await getUserAccounts();
+  console.log(user);
 
   return (
     <header className="fixed bg-white top-0 z-50 w-full py-2 border-b shadow-md">
