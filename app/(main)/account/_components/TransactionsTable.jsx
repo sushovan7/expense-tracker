@@ -62,13 +62,6 @@ function TransactionsTable({ transactions }) {
   const [searchType, setSearchType] = useState("");
   const [allTypes, setAllTypes] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
-  const totalPages = Math.ceil(transactions.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentTransactions = transactions.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
 
   const {
     loading: deleteLoading,
@@ -173,6 +166,13 @@ function TransactionsTable({ transactions }) {
   }, [deleted, deleteLoading]);
 
   // pagination
+  const itemsPerPage = 20;
+  const totalPages = Math.ceil(transactions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentTransactions = filterAndSortedTransactions.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   function handlePaginatePrevious() {
     if (currentPage > 1) {
@@ -316,7 +316,7 @@ function TransactionsTable({ transactions }) {
                   <TableCell>
                     {transaction.type === "EXPENSE" ? (
                       <span className="text-red-500">
-                        {format(new Date(transaction.data), "PP")}
+                        {format(new Date(transaction.date), "PP")}
                       </span>
                     ) : (
                       <span className="text-green-500">

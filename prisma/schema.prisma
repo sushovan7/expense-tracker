@@ -56,7 +56,7 @@ id String @id @default(uuid())
 type TransactionType
 amount Decimal
 description String?
-data DateTime
+date DateTime
 category String
 receiptUrl String?
 isRecurring Boolean @default(false)

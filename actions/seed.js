@@ -60,7 +60,7 @@ export async function seedTransactions() {
           description: `${
             type === "INCOME" ? "Received" : "Paid for"
           } ${category}`,
-          data: date, // Ensure field name matches your schema
+          date: date, // Ensure field name matches your schema
           category,
           status: "COMPLETED",
           userId: USER_ID,
