@@ -1,6 +1,16 @@
 "use client";
 
 import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+
+import {
   Table,
   TableCaption,
   TableHeader,
@@ -36,8 +46,12 @@ import {
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { useFetch } from "@/hooks/useFetch";
+import { toast } from "sonner";
+import { BarLoader } from "react-spinners";
+import { deleteBulkTransactions } from "@/actions/account.action";
 
 function TransactionsTable({ transactions }) {
   const router = useRouter();
@@ -47,6 +61,21 @@ function TransactionsTable({ transactions }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchType, setSearchType] = useState("");
   const [allTypes, setAllTypes] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+  const totalPages = Math.ceil(transactions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentTransactions = transactions.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  const {
+    loading: deleteLoading,
+    fn: deleteFn,
+    data: deleted,
+    error,
+  } = useFetch(deleteBulkTransactions);
 
   const [sort, setSort] = useState({
     field: "date",
@@ -89,6 +118,7 @@ function TransactionsTable({ transactions }) {
 
     return result;
   }, [transactions, searchType, searchQuery, sort]);
+
   function handleAllChange(e) {
     const isChecked = e.target.checked;
 
@@ -124,11 +154,43 @@ function TransactionsTable({ transactions }) {
     }));
   }
 
-  function handleDelete() {}
-  function handleBulkDelete() {}
+  const handleBulkDelete = async () => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selectedIds.length} transactions?`
+      )
+    )
+      return;
+
+    deleteFn(selectedIds);
+  };
+
+  useEffect(() => {
+    if (deleted && !deleteLoading) {
+      toast.success("Transactions deleted successfully");
+      setSelectedIds([]);
+    }
+  }, [deleted, deleteLoading]);
+
+  // pagination
+
+  function handlePaginatePrevious() {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  }
+
+  function handlePaginateNext() {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  }
 
   return (
     <div className="pt-8">
+      {deleteLoading && (
+        <BarLoader className="mb-4" width={"100%"} color="#9333ea" />
+      )}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute right-2 top-2.5 h-4 w-4 " />
@@ -149,7 +211,7 @@ function TransactionsTable({ transactions }) {
               <SelectItem value="EXPENSE">EXPENSE</SelectItem>
             </SelectContent>
           </Select>
-          {selectedIds.length > 0 && (
+          {selectedIds.length > 1 && (
             <div>
               <Button variant="destructive" onClick={handleBulkDelete}>
                 Delete {selectedIds.length}{" "}
@@ -239,7 +301,7 @@ function TransactionsTable({ transactions }) {
               </TableCell>
             </TableRow>
           ) : (
-            filterAndSortedTransactions.map((transaction) => {
+            currentTransactions.map((transaction) => {
               return (
                 <TableRow key={transaction.id}>
                   <TableCell className="font-medium">
@@ -302,7 +364,7 @@ function TransactionsTable({ transactions }) {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-red-500"
-                            onClick={() => handleDelete([transaction.id])}
+                            onClick={() => deleteFn([transaction.id])}
                           >
                             Delete
                           </DropdownMenuItem>
@@ -316,6 +378,32 @@ function TransactionsTable({ transactions }) {
           )}
         </TableBody>
       </Table>
+      {transactions.length > 20 && (
+        <div className="mt-10">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <Button
+                  onClick={handlePaginatePrevious}
+                  variant="ghost"
+                  disabled={currentPage === 1}
+                >
+                  <PaginationPrevious />
+                </Button>
+              </PaginationItem>
+              <PaginationItem>
+                <Button
+                  onClick={handlePaginateNext}
+                  variant="ghost"
+                  disabled={currentPage === totalPages}
+                >
+                  <PaginationNext />
+                </Button>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 }
