@@ -320,7 +320,7 @@ function TransactionsTable({ transactions }) {
                       </span>
                     ) : (
                       <span className="text-green-500">
-                        {format(new Date(transaction.data), "PP")}
+                        {format(new Date(transaction.date), "PP")}
                       </span>
                     )}
                   </TableCell>

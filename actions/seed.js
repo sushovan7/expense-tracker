@@ -1,13 +1,12 @@
 "use server";
 
 import { db } from "@/lib/prisma";
-import { Decimal } from "@prisma/client/runtime/library";
 import { subDays } from "date-fns";
-import { v4 as uuidv4 } from "uuid"; // Use this if `crypto.randomUUID()` is unavailable
 
-const ACCOUNT_ID = "10e48405-1ac3-4f52-9a83-093caffc75ea";
-const USER_ID = "7893ecc5-305e-4e91-8423-3da7fde76f0e";
+const ACCOUNT_ID = "9d96dd3b-47d4-4a04-b701-a9b356ebbc1c";
+const USER_ID = "2054a1d0-bd03-4c6c-a19c-e1fc3e8429f9";
 
+// Categories with their typical amount ranges
 const CATEGORIES = {
   INCOME: [
     { name: "salary", range: [5000, 8000] },
@@ -29,10 +28,12 @@ const CATEGORIES = {
   ],
 };
 
+// Helper to generate random amount within a range
 function getRandomAmount(min, max) {
   return Number((Math.random() * (max - min) + min).toFixed(2));
 }
 
+// Helper to get random category with amount
 function getRandomCategory(type) {
   const categories = CATEGORIES[type];
   const category = categories[Math.floor(Math.random() * categories.length)];
@@ -42,57 +43,55 @@ function getRandomCategory(type) {
 
 export async function seedTransactions() {
   try {
+    // Generate 90 days of transactions
     const transactions = [];
-    let totalBalance = new Decimal(0);
+    let totalBalance = 0;
 
     for (let i = 90; i >= 0; i--) {
       const date = subDays(new Date(), i);
+
+      // Generate 1-3 transactions per day
       const transactionsPerDay = Math.floor(Math.random() * 3) + 1;
 
       for (let j = 0; j < transactionsPerDay; j++) {
+        // 40% chance of income, 60% chance of expense
         const type = Math.random() < 0.4 ? "INCOME" : "EXPENSE";
         const { category, amount } = getRandomCategory(type);
 
-        transactions.push({
-          id: uuidv4(), // Replace with crypto.randomUUID() if supported
+        const transaction = {
+          id: crypto.randomUUID(),
           type,
-          amount: new Decimal(amount), // Ensure Decimal is used for Prisma
+          amount,
           description: `${
             type === "INCOME" ? "Received" : "Paid for"
           } ${category}`,
-          date: date, // Ensure field name matches your schema
+          date,
           category,
           status: "COMPLETED",
           userId: USER_ID,
           accountId: ACCOUNT_ID,
           createdAt: date,
           updatedAt: date,
-        });
+        };
 
-        totalBalance =
-          type === "INCOME"
-            ? totalBalance.add(new Decimal(amount))
-            : totalBalance.sub(new Decimal(amount));
+        totalBalance += type === "INCOME" ? amount : -amount;
+        transactions.push(transaction);
       }
     }
 
-    if (transactions.length === 0) {
-      throw new Error("No transactions generated. Check your logic.");
-    }
-
+    // Insert transactions in batches and update account balance
     await db.$transaction(async (tx) => {
-      console.log("Deleting existing transactions...");
+      // Clear existing transactions
       await tx.transaction.deleteMany({
         where: { accountId: ACCOUNT_ID },
       });
 
-      console.log("Inserting new transactions...");
+      // Insert new transactions
       await tx.transaction.createMany({
         data: transactions,
-        skipDuplicates: true,
       });
 
-      console.log("Updating account balance...");
+      // Update account balance
       await tx.account.update({
         where: { id: ACCOUNT_ID },
         data: { balance: totalBalance },
@@ -101,7 +100,7 @@ export async function seedTransactions() {
 
     return {
       success: true,
-      message: `Created ${transactions.length} transactions.`,
+      message: `Created ${transactions.length} transactions`,
     };
   } catch (error) {
     console.error("Error seeding transactions:", error);

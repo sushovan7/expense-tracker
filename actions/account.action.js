@@ -91,7 +91,7 @@ export async function getAccountWithTransactions(accountId) {
       include: {
         transactions: {
           orderBy: {
-            data: "desc",
+            date: "desc",
           },
         },
         _count: {
