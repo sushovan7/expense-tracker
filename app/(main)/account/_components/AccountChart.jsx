@@ -117,21 +117,21 @@ function AccountChart({ transactions }) {
         <div className="flex flex-row mb-10 items-start justify-around gap-3">
           <div>
             {" "}
-            <p>Total income</p>
+            <p className="font-bold">Total income</p>
             <p className="text-lg text-blue-500 font-bold">
               {totals.income.toFixed(2)}
             </p>
           </div>
           <div>
             {" "}
-            <p>Total expense</p>
+            <p className="font-bold">Total expense</p>
             <p className="text-lg text-red-500 font-bold">
               {totals.expense.toFixed(2)}
             </p>
           </div>
           <div>
             {" "}
-            <p className="font-bold text-xl">Net</p>
+            <p className="font-bold text-lg ">Net</p>
             <p
               className={`text-lg ${
                 totals.income >= totals.expense

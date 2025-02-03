@@ -83,7 +83,6 @@ export async function createAccount(data) {
 export async function getUserAccounts() {
   try {
     const { userId } = await auth();
-    console.log(userId);
 
     if (!userId) {
       throw new Error("Unauthorized");

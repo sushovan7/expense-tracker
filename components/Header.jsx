@@ -5,11 +5,12 @@ import { Button } from "./ui/button";
 import { LayoutDashboard, Pencil } from "lucide-react";
 import { checkUser } from "@/lib/checkUser.js";
 import { getUserAccounts } from "@/actions/dashboard.action";
-import { updateDefaultAccount } from "@/actions/account.action";
+import { getCurrentBudget } from "@/actions/budget.action";
 
 async function Header() {
   await checkUser();
   const user = await getUserAccounts();
+  await getCurrentBudget();
 
   return (
     <header className="fixed bg-white top-0 z-50 w-full py-2 border-b shadow-md">

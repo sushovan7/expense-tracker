@@ -4,13 +4,29 @@ import React from "react";
 import AccountDrawer from "@/components/AccountDrawer";
 import { getUserAccounts } from "@/actions/dashboard.action";
 import AccountCard from "./_components/AccountCard";
+import { getCurrentBudget } from "@/actions/budget.action";
+import BudgetProgress from "./_components/BudgetProgress";
 
 async function Dashboard() {
   const { data } = await getUserAccounts();
 
+  const defaultAccount = data.filter((account) => account.isDefault === true);
+
+  let budgetData = null;
+
+  if (defaultAccount) {
+    budgetData = await getCurrentBudget(defaultAccount.id);
+  }
+
   return (
     <div className="space-y-8">
       {/* Budget Progress */}
+      {defaultAccount && (
+        <BudgetProgress
+          initialBudget={budgetData?.budget}
+          currentExpenses={budgetData.currentExpenses || 0}
+        />
+      )}
 
       {/* Dashboard Overview */}
 
