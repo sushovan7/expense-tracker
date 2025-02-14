@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import { BarLoader } from "react-spinners";
 import Dashboard from "../dashboard/page";
+import { auth } from "@clerk/nextjs/server";
 
-function DashboardLayout() {
+async function DashboardLayout() {
   return (
     <div className="px-5">
       <div className="flex items-center justify-between mb-5">

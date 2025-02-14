@@ -9,7 +9,7 @@ import { getCurrentBudget } from "@/actions/budget.action";
 
 async function Header() {
   await checkUser();
-  const user = await getUserAccounts();
+  await getUserAccounts();
   await getCurrentBudget();
 
   return (
