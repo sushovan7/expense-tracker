@@ -98,20 +98,10 @@ function BudgetProgress({ initialBudget, currentExpenses }) {
               <CardDescription>
                 {" "}
                 {initialBudget ? (
-                  <div className=" flex gap-1">
-                    <p>
-                      <span className="text-red-500">
-                        ${currentExpenses.toFixed(2)}
-                      </span>{" "}
-                      of
-                    </p>
-                    <p>
-                      <span className="text-green-500">
-                        ${initialBudget?.amount}{" "}
-                      </span>
-                      is spent
-                    </p>{" "}
-                  </div>
+                  <>
+                    {`$${currentExpenses.toFixed(2)}
+                    of $${initialBudget?.amount} is spent`}
+                  </>
                 ) : (
                   "No budget set"
                 )}
