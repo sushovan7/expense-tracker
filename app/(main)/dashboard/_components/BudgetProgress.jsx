@@ -122,13 +122,13 @@ function BudgetProgress({ initialBudget, currentExpenses }) {
           <div>
             <Progress
               value={percentageUsed}
-              extraStyles={`${
+              extraStyles={
                 percentageUsed >= 90
                   ? "bg-red-500"
                   : percentageUsed >= 75
                   ? "bg-yellow-500"
                   : "bg-green-500"
-              }`}
+              }
             />
           </div>
         )}
