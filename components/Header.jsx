@@ -27,7 +27,7 @@ async function Header() {
                 <span className="hidden md:inline"> Dashboard</span>
               </Button>
             </Link>
-            <Link href="/dashboard">
+            <Link href="/transaction/create">
               <Button>
                 <Pencil />
 
