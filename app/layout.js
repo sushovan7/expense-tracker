@@ -5,7 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 
 export const metadata = {
-  title: "Money Pay",
+  title: "Mint",
   description: "Only place to manage all your finances",
 };
 
