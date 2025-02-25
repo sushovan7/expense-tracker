@@ -1,9 +1,11 @@
-"use Client";
+"use client";
 
+import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { Check } from "lucide-react";
 
 function HeroSection() {
+  const router = useRouter();
   return (
     <div className="pb-20 ">
       <section className="container pt-28 md:h-[80vh]   flex flex-col px-4 items-center md:justify-center  mx-auto ">
@@ -39,6 +41,7 @@ function HeroSection() {
           </ul>
         </div>
         <Button
+          onClick={() => router.push("/dashboard")}
           size="lg"
           className="bg-blue-600 hover:bg-blue-500 cursor-pointer text-white text-lg py-8 px-10"
         >
