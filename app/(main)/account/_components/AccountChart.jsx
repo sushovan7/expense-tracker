@@ -49,7 +49,6 @@ const DATE_RANGE = {
 };
 
 function AccountChart({ transactions }) {
-  console.log(transactions);
   const [dateRange, setDateRange] = useState("1M");
 
   const filterData = useMemo(() => {
@@ -62,7 +61,7 @@ function AccountChart({ transactions }) {
     const filteredData = transactions.filter(
       (t) => new Date(t.date) >= startDate && new Date(t.date) <= endOfDay(now)
     );
-    console.log(filteredData);
+
     const grouped = filteredData.reduce((acc, transaction) => {
       const date = format(new Date(transaction.date), "MMM dd");
       if (!acc[date]) {

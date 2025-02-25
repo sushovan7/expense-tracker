@@ -1,6 +1,9 @@
 "use client";
 
-import { createTransaction } from "@/actions/transaction.action";
+import {
+  createTransaction,
+  updateTransaction,
+} from "@/actions/transaction.action";
 import { useFetch } from "@/hooks/useFetch";
 import { transactionSchema } from "@/utils/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,11 +29,18 @@ import { format } from "date-fns";
 import { Calendar1, Loader2 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Switch } from "@/components/ui/switch";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-function AddTransactionForm({ accounts, categories }) {
+function AddTransactionForm({
+  accounts,
+  categories,
+  editMode = false,
+  initialData = null,
+}) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
 
   const {
     register,
@@ -42,14 +52,29 @@ function AddTransactionForm({ accounts, categories }) {
     reset,
   } = useForm({
     resolver: zodResolver(transactionSchema),
-    defaultValues: {
-      type: "EXPENSE",
-      amount: "",
-      description: "",
-      accountId: accounts?.data.find((ac) => ac.isDefault)?.id,
-      date: new Date(),
-      isRecurring: false,
-    },
+
+    defaultValues:
+      editMode && initialData
+        ? {
+            type: initialData.type,
+            amount: initialData.amount.toString(),
+            description: initialData.description,
+            accountId: initialData.accountId,
+            category: initialData.category,
+            date: new Date(initialData.date),
+            isRecurring: initialData.isRecurring,
+            ...(initialData.recurringInterval && {
+              recurringInterval: initialData.recurringInterval,
+            }),
+          }
+        : {
+            type: "EXPENSE",
+            amount: "",
+            description: "",
+            accountId: accounts?.data.find((ac) => ac.isDefault)?.id,
+            date: new Date(),
+            isRecurring: false,
+          },
   });
 
   const {
@@ -57,7 +82,7 @@ function AddTransactionForm({ accounts, categories }) {
     fn: transactionFn,
     data: transactionResult,
     error,
-  } = useFetch(createTransaction);
+  } = useFetch(editMode ? updateTransaction : createTransaction);
 
   const type = watch("type");
   const isRecurring = watch("isRecurring");
@@ -69,16 +94,24 @@ function AddTransactionForm({ accounts, categories }) {
       amount: parseFloat(data.amount),
     };
 
-    transactionFn(formData);
+    if (editMode) {
+      transactionFn(editId, formData);
+    } else {
+      transactionFn(formData);
+    }
   };
 
   useEffect(() => {
     if (transactionResult?.success && !transactionLoading) {
-      toast.success("Transaction created successfull");
+      toast.success(
+        editMode
+          ? "Transaction edited sucessfully"
+          : "Transaction created successfull"
+      );
       reset();
       router.push(`/account/${transactionResult.data.accountId}`);
     }
-  }, [transactionResult, transactionLoading]);
+  }, [transactionResult, transactionLoading, editMode]);
 
   const filteredCategories = categories.filter(
     (category) => category.type === type
@@ -261,10 +294,13 @@ function AddTransactionForm({ accounts, categories }) {
         <Button type="submit" className="w-50%" disabled={transactionLoading}>
           {transactionLoading ? (
             <>
-              <Loader2 className="mr-2 w-4 h-4 animate-spin" /> ...Creating{" "}
+              <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+              {editMode ? "...Updating" : "...Creating"}
             </>
+          ) : editMode ? (
+            "Update transaction"
           ) : (
-            "Create transaction"
+            "Create transactions"
           )}
         </Button>
       </div>

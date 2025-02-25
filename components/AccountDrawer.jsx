@@ -67,7 +67,6 @@ function AccountDrawer({ children }) {
     if (error) {
       toast.error(error.message || "Failed to create account");
     }
-    console.log(error);
   }, [error]);
 
   async function onSubmit(data) {
