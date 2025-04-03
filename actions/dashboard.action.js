@@ -82,51 +82,46 @@ export async function createAccount(data) {
 
 export async function getUserAccounts() {
   try {
+    // Authenticate user
     const { userId } = await auth();
 
     if (!userId) {
       throw new Error("Unauthorized");
     }
 
+    // Find user in database
     const user = await db.user.findUnique({
-      where: {
-        clerkUserId: userId,
-      },
+      where: { clerkUserId: userId },
     });
 
     if (!user) {
       throw new Error("User not found");
     }
 
+    // Fetch user's accounts
     const accounts = await db.account.findMany({
-      where: {
-        userId: user.id,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
       include: {
-        _count: {
-          select: {
-            transactions: true,
-          },
-        },
+        _count: { select: { transactions: true } },
       },
     });
 
-    if (!accounts) {
-      throw new Error("No accounts present");
-    }
-
+    // Map the accounts (if needed)
     const serializedAccounts = accounts.map(serializeTransactions);
 
     return {
       success: true,
-      message: "Account of user",
+      message: "User's accounts retrieved successfully",
       data: serializedAccounts,
     };
   } catch (error) {
-    throw new Error(error.message);
+    console.error("Error fetching user accounts:", error); // Log error for debugging
+    return {
+      success: false,
+      message: error.message || "An unexpected error occurred",
+      data: null,
+    };
   }
 }
 
