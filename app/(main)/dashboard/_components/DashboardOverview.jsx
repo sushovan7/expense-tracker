@@ -32,15 +32,15 @@ const COLORS = [
   "#E27D60",
 ];
 
-export function DashboardOverview({ accounts, transactions }) {
+export function DashboardOverview({ accounts, transactions = [] }) {
   const [selectedAccountId, setSelectedAccountId] = useState(
     accounts.find((a) => a.isDefault)?.id || accounts[0]?.id
   );
 
-  // Filter transactions for selected account
-  const accountTransactions = transactions.filter(
-    (t) => t.accountId === selectedAccountId
-  );
+  // Ensure transactions is an array before using .filter()
+  const accountTransactions = Array.isArray(transactions)
+    ? transactions.filter((t) => t.accountId === selectedAccountId)
+    : [];
 
   // Get recent transactions (last 5)
   const recentTransactions = accountTransactions
