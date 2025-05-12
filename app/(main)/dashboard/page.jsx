@@ -11,7 +11,7 @@ import { DashboardOverview } from "./_components/DashboardOverview";
 async function Dashboard() {
   const { data } = await getUserAccounts();
 
-  const defaultAccount = data.filter((account) => account.isDefault === true);
+  const defaultAccount = data.find((account) => account.isDefault === true);
 
   let budgetData = null;
 
@@ -23,7 +23,6 @@ async function Dashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Budget Progress */}
       {defaultAccount && (
         <BudgetProgress
           initialBudget={budgetData?.budget}
