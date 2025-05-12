@@ -7,25 +7,20 @@ import { revalidatePath } from "next/cache";
 export async function getCurrentBudget(accountId) {
   try {
     const { userId } = await auth();
-
     if (!userId) {
-      throw new Error("Unauthorized");
+      return { success: false, message: "Unauthorized", data: null };
     }
 
     const user = await db.user.findUnique({
-      where: {
-        clerkUserId: userId,
-      },
+      where: { clerkUserId: userId },
     });
 
     if (!user) {
-      throw new Error("User not found");
+      return { success: false, message: "User not found", data: null };
     }
 
     const budget = await db.budget.findFirst({
-      where: {
-        userId: user.id,
-      },
+      where: { userId: user.id },
     });
 
     const currentDate = new Date();
@@ -50,62 +45,68 @@ export async function getCurrentBudget(accountId) {
         },
         accountId,
       },
-      _sum: {
-        amount: true,
-      },
+      _sum: { amount: true },
     });
 
     return {
-      budget: budget ? { ...budget, amount: budget.amount.toNumber() } : null,
-      currentExpenses: expenses._sum.amount
-        ? expenses._sum.amount.toNumber()
-        : 0,
+      success: true,
+      message: "Budget fetched successfully",
+      data: {
+        budget: budget ? { ...budget, amount: budget.amount.toNumber() } : null,
+        currentExpenses: expenses._sum.amount?.toNumber() || 0,
+      },
     };
   } catch (error) {
-    throw new Error(error.message);
+    console.error("getCurrentBudget error:", error);
+    return {
+      success: false,
+      message: error?.message || "Failed to fetch budget",
+      data: null,
+    };
   }
 }
 
 export async function updateBudget(amount) {
   try {
     const { userId } = await auth();
-    console.log("user", userId);
-
     if (!userId) {
-      throw new Error("Unauthorized");
+      return { success: false, message: "Unauthorized", data: null };
+    }
+
+    if (typeof amount !== "number" || isNaN(amount)) {
+      return { success: false, message: "Invalid budget amount", data: null };
     }
 
     const user = await db.user.findUnique({
-      where: {
-        clerkUserId: userId,
-      },
+      where: { clerkUserId: userId },
     });
 
     if (!user) {
-      throw new Error("User not found");
+      return { success: false, message: "User not found", data: null };
     }
 
     const budget = await db.budget.upsert({
-      where: {
-        userId: user.id,
-      },
-      update: {
-        amount,
-      },
-      create: {
-        userId: user.id,
-        amount,
-      },
+      where: { userId: user.id },
+      update: { amount },
+      create: { userId: user.id, amount },
     });
+
     revalidatePath("/dashboard");
+
     return {
       success: true,
+      message: "Budget updated successfully",
       data: {
         ...budget,
         amount: budget.amount.toNumber(),
       },
     };
   } catch (error) {
-    throw new Error(error.message);
+    console.error("updateBudget error:", error);
+    return {
+      success: false,
+      message: error?.message || "Failed to update budget",
+      data: null,
+    };
   }
 }
